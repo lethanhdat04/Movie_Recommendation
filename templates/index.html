@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Movie Recommender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
+        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Search for a Movie</h1>
+        <p class="mb-4 text-center text-gray-600">Enter a movie title to get its details</p>
+        <form id="moodForm" class="mt-4">
+            <input type="text" id="userInput" name="user_input" class="w-full p-2 border rounded-md" placeholder="Enter movie title..." required>
+            <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Search</button>
+        </form>
+
+        <div id="loading" class="mt-4 text-center hidden">
+            Searching for your movie...
+        </div>
+        <div id="error" class="mt-4 text-center hidden text-red-500">
+            Movie not found or an error occurred. Please try again.
+        </div>
+        <div id="result" class="mt-4 hidden">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800">Movie Details:</h2>
+            <div id="movieRecommendations" class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow" id="movieCard">
+                    <img id="moviePoster" class="w-full h-72 object-cover rounded-md mb-2" src="" alt="Movie Poster">
+                    <h3 id="movieTitle" class="font-semibold text-lg mb-1"></h3>
+                    <a id="movieLink" href="#" target="_blank" class="text-blue-500 hover:underline">More Info</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('moodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userInput = document.getElementById('userInput').value.trim();
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+
+            try {
+                const formData = new FormData();
+                formData.append('user_input', userInput);
+
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Not OK');
+
+                const data = await response.json();
+
+                document.getElementById('moviePoster').src = data.poster || '/path/to/placeholder.jpg';
+                document.getElementById('moviePoster').alt = data.title;
+                document.getElementById('movieTitle').textContent = data.title;
+                document.getElementById('movieLink').href = data.link;
+
+                document.getElementById('result').classList.remove('hidden');
+            } catch (err) {
+                document.getElementById('error').classList.remove('hidden');
+                console.error(err);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
