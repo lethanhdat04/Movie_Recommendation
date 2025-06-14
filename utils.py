@@ -44,6 +44,22 @@ def generate_recommendations(user_id, algo, df):
     user_predictions.sort(key=lambda x: x.est, reverse=True)
     top_10_recommendations = user_predictions[:10]
 
-    print(f"Top 10 recommendations for User {user_id}:")
-    for pred in top_10_recommendations:
-        print(f"Movie ID: {pred.iid}, Estimated Rating: {pred.est:.2f}")
+    # print(f"Top 10 recommendations for User {user_id}:")
+    # for pred in top_10_recommendations:
+    #     print(f"Movie ID: {pred.iid}, Estimated Rating: {pred.est:.2f}")
+    return top_10_recommendations
+        
+
+def get_movie_details(tmdb_api_key, title):
+    search_url = f"https://api.themoviedb.org/3/search/movie?api_key={tmdb_api_key}&query={title}"
+    response = requests.get(search_url)
+    if response.status_code == 200:
+        results = response.json()['results']
+        if results:
+            movie = results[0]
+            return {
+                'title': movie['title'],
+                'poster': f"https://image.tmdb.org/t/p/w500{movie['poster_path']}" if movie['poster_path'] else None,
+                'link': f"https://www.themoviedb.org/movie/{movie['id']}"
+            }
+    return None

@@ -1,72 +1,561 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Movie Recommender</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
-        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Search for a Movie</h1>
-        <p class="mb-4 text-center text-gray-600">Enter a movie title to get its details</p>
-        <form id="moodForm" class="mt-4">
-            <input type="text" id="userInput" name="user_input" class="w-full p-2 border rounded-md" placeholder="Enter movie title..." required>
-            <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Search</button>
-        </form>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        <div id="loading" class="mt-4 text-center hidden">
-            Searching for your movie...
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .tab-navigation {
+            display: flex;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 15px;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .movie-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .movie-info {
+            padding: 20px;
+        }
+
+        .movie-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .movie-rating {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .movie-overview {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .movie-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .genre-tag {
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c33;
+        }
+
+        .no-poster {
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .movie-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Movie Recommendation System</h1>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="showTab('user-tab')">Gợi ý theo User</button>
+            <button class="tab-button" onclick="showTab('movie-tab')">Phim tương tự</button>
+            <button class="tab-button" onclick="showTab('emotion-tab')">Theo cảm xúc</button>
         </div>
-        <div id="error" class="mt-4 text-center hidden text-red-500">
-            Movie not found or an error occurred. Please try again.
-        </div>
-        <div id="result" class="mt-4 hidden">
-            <h2 class="text-xl font-semibold mb-2 text-gray-800">Movie Details:</h2>
-            <div id="movieRecommendations" class="grid grid-cols-1 md:grid-cols-1 gap-4">
-                <div class="bg-white p-4 rounded-lg shadow" id="movieCard">
-                    <img id="moviePoster" class="w-full h-72 object-cover rounded-md mb-2" src="" alt="Movie Poster">
-                    <h3 id="movieTitle" class="font-semibold text-lg mb-1"></h3>
-                    <a id="movieLink" href="#" target="_blank" class="text-blue-500 hover:underline">More Info</a>
-                </div>
+
+        <!-- User Recommendation Tab -->
+        <div id="user-tab" class="tab-content active">
+            <div class="form-section">
+                <form id="recommendForm">
+                    <div class="form-group">
+                        <label for="user_id">Nhập User ID để nhận gợi ý phim:</label>
+                        <input type="number" id="user_id" name="user_id" placeholder="Ví dụ: 10" min="1" required>
+                    </div>
+                    <button type="submit" class="btn" id="submitBtn">
+                        Tìm gợi ý phim
+                    </button>
+                </form>
             </div>
+        </div>
+
+        <!-- Similar Movies Tab -->
+        <div id="movie-tab" class="tab-content">
+            <div class="form-section">
+                <form id="similarForm">
+                    <div class="form-group">
+                        <label for="movie_title">Nhập tên phim để tìm phim tương tự:</label>
+                        <input type="text" id="movie_title" name="movie_title" placeholder="Ví dụ: Toy Story" required>
+                    </div>
+                    <button type="submit" class="btn" id="similarBtn">
+                        Tìm phim tương tự
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Emotion Recommendation Tab -->
+        <div id="emotion-tab" class="tab-content">
+            <div class="form-section">
+                <form id="emotionForm">
+                    <div class="form-group">
+                        <label for="emotion">Chọn cảm xúc/tâm trạng của bạn:</label>
+                        <select id="emotion" name="emotion" required>
+                            <option value="">-- Chọn cảm xúc --</option>
+                            <option value="happy">😊 Vui vẻ</option>
+                            <option value="sad">😢 Buồn</option>
+                            <option value="excited">🤩 Hào hứng</option>
+                            <option value="romantic">💕 Lãng mạn</option>
+                            <option value="scared">😨 Sợ hãi</option>
+                            <option value="adventurous">🗺️ Phiêu lưu</option>
+                            <option value="thoughtful">🤔 Suy tư</option>
+                            <option value="nostalgic">🥺 Hoài niệm</option>
+                            <option value="energetic">⚡ Năng động</option>
+                            <option value="relaxed">😌 Thư giãn</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn" id="emotionBtn">
+                        Tìm phim phù hợp
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Đang tìm kiếm gợi ý phim cho bạn...</p>
+        </div>
+
+        <div class="results" id="results">
+            <div class="results-header" id="resultsHeader">
+                <!-- Header sẽ được thêm bằng JavaScript -->
+            </div>
+            <div class="movie-grid" id="movieGrid">
+                <!-- Movie cards sẽ được thêm bằng JavaScript -->
+            </div>
+        </div>
+
+        <div class="error" id="error" style="display: none;">
+            <!-- Error messages sẽ được hiển thị ở đây -->
         </div>
     </div>
 
     <script>
-        document.getElementById('moodForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userInput = document.getElementById('userInput').value.trim();
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('result').classList.add('hidden');
-            document.getElementById('error').classList.add('hidden');
+        // Tab switching functionality
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Clear previous results
+            clearResults();
+        }
 
+        function clearResults() {
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        // User recommendation form
+        document.getElementById('recommendForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await handleRecommendation('/recommend', 'user_id', 'submitBtn', 'Đang xử lý...');
+        });
+
+        // Similar movies form
+        document.getElementById('similarForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await handleRecommendation('/recommend_similar', 'movie_title', 'similarBtn', 'Đang tìm kiếm...');
+        });
+
+        // Emotion recommendation form
+        document.getElementById('emotionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await handleRecommendation('/recommend_emotion', 'emotion', 'emotionBtn', 'Đang tìm kiếm...');
+        });
+
+        async function handleRecommendation(endpoint, inputField, buttonId, loadingText) {
+            const inputValue = document.getElementById(inputField).value;
+            const submitBtn = document.getElementById(buttonId);
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+            
+            // Reset hiển thị
+            results.classList.remove('show');
+            error.style.display = 'none';
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = loadingText;
+            
             try {
                 const formData = new FormData();
-                formData.append('user_input', userInput);
-
-                const response = await fetch('/search', {
+                formData.append(inputField, inputValue);
+                
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     body: formData
                 });
-
-                if (!response.ok) throw new Error('Not OK');
-
+                
                 const data = await response.json();
-
-                document.getElementById('moviePoster').src = data.poster || '/path/to/placeholder.jpg';
-                document.getElementById('moviePoster').alt = data.title;
-                document.getElementById('movieTitle').textContent = data.title;
-                document.getElementById('movieLink').href = data.link;
-
-                document.getElementById('result').classList.remove('hidden');
+                
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'Đã xảy ra lỗi không xác định');
+                }
             } catch (err) {
-                document.getElementById('error').classList.remove('hidden');
-                console.error(err);
+                showError('Không thể kết nối đến server. Vui lòng thử lại.');
+                console.error('Error:', err);
             } finally {
-                document.getElementById('loading').classList.add('hidden');
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
-        });
+        }
+        
+        function displayResults(data) {
+            const resultsHeader = document.getElementById('resultsHeader');
+            const movieGrid = document.getElementById('movieGrid');
+            const results = document.getElementById('results');
+            
+            let headerText = '';
+            let subText = '';
+            
+            // Generate header based on recommendation type
+            if (data.type === 'similar') {
+                headerText = `🎭 Top ${data.total_recommendations} phim tương tự "${data.search_query}"`;
+                subText = 'Dựa trên thể loại và độ tương đồng nội dung';
+            } else if (data.type === 'emotion') {
+                headerText = `😊 Top ${data.total_recommendations} phim phù hợp với cảm xúc "${data.emotion}"`;
+                subText = 'Những bộ phim phù hợp với tâm trạng hiện tại của bạn';
+            } else {
+                headerText = `🎯 Top ${data.total_recommendations} gợi ý phim cho User ${data.user_id}`;
+                subText = 'Dựa trên sở thích và lịch sử xem phim của bạn';
+            }
+            
+            // Cập nhật header
+            resultsHeader.innerHTML = `
+                <h2>${headerText}</h2>
+                <p>${subText}</p>
+            `;
+            
+            // Xóa kết quả cũ
+            movieGrid.innerHTML = '';
+            
+            // Thêm movie cards
+            data.recommendations.forEach((movie, index) => {
+                const movieCard = createMovieCard(movie, index + 1, data.type);
+                movieGrid.appendChild(movieCard);
+            });
+            
+            results.classList.add('show');
+        }
+        
+        function createMovieCard(movie, rank, type = 'user') {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            
+            const posterHtml = movie.poster_path 
+                ? `<img src="${movie.poster_path}" alt="${movie.title}" class="movie-poster">`
+                : `<div class="movie-poster no-poster">Không có poster</div>`;
+            
+            const genresHtml = movie.genres && movie.genres.length > 0
+                ? movie.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')
+                : '';
+            
+            const overview = movie.overview && movie.overview !== 'Không có thông tin chi tiết'
+                ? (movie.overview.length > 150 ? movie.overview.substring(0, 150) + '...' : movie.overview)
+                : 'Không có mô tả';
+            
+            // Different rating display based on recommendation type
+            let ratingHtml = '';
+            if (type === 'similar' && movie.similarity_score) {
+                ratingHtml = `<div class="movie-rating">🎯 Độ tương tự: ${movie.similarity_score}/1.0</div>`;
+            } else if (type === 'emotion' && movie.avg_rating) {
+                ratingHtml = `<div class="movie-rating">⭐ Đánh giá TB: ${movie.avg_rating}/5.0</div>`;
+            } else if (movie.estimated_rating) {
+                ratingHtml = `<div class="movie-rating">⭐ Dự đoán: ${movie.estimated_rating}/5.0</div>`;
+            }
+            
+            card.innerHTML = `
+                ${posterHtml}
+                <div class="movie-info">
+                    <div class="movie-title">#${rank}. ${movie.title}</div>
+                    ${ratingHtml}
+                    ${movie.vote_average ? `<div style="color: #666; font-size: 0.9em; margin-bottom: 10px;">TMDB: ${movie.vote_average}/10</div>` : ''}
+                    <div class="movie-overview">${overview}</div>
+                    ${genresHtml ? `<div class="movie-genres">${genresHtml}</div>` : ''}
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.style.display = 'block';
+        }
     </script>
 </body>
 </html>
